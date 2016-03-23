@@ -1,0 +1,51 @@
+var express = require('express');
+var router = express.Router();
+var gcm = require('node-gcm');
+//npm install node-gcm --save
+/* GET home page. */
+router.get('/', function(req, res, next) {
+
+
+
+	var message = new gcm.Message();
+	message.addNotification({
+							  title: 'Alert!!!',
+							  body: 'You must read this one :-)',
+							  icon: 'ic_launcher',
+							  message:'Hello, There.',
+							  e:'crucio'
+							});
+
+	//normal OR high. this are the options.
+	message.priority ='high'
+
+	// Add the registration tokens of the devices you want to send to
+	var regTokens =[];
+	regTokens.push('ednt5GFlUpk:APA91bGO5Zz--.......Df0tbQzL');
+
+
+	// Set up the sender with you API key
+	var sender = new gcm.Sender('AIza...I');
+
+ 	/*
+	// Now the sender can be used to send messages
+	sender.send(message, { registrationTokens: regTokens }, function (err, response) {
+		if(err) console.error(err);
+		else 	console.log(response);
+	});
+	*/
+
+	// Send to a topic, we don't mention recipients here.
+	// google will figure them out (sent to all users subscribed to this topic).
+	sender.send(message, { topic: '/topics/global' }, function (err, response) {
+		if(err) console.error(err);
+		else 	console.log(response);
+	});
+
+
+
+
+  res.render('index', { title: 'Sent' });
+});
+
+module.exports = router;
