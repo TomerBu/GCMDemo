@@ -1,4 +1,4 @@
-package tomerbu.edu.gcmdemo.gcm.sending;
+package tomerbu.edu.gcmdemo.utils;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

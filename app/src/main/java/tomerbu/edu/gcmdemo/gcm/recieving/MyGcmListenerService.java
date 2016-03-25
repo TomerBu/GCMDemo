@@ -1,12 +1,12 @@
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
- * <p>
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
+ * <p/>
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,7 +29,6 @@ import android.util.Log;
 import com.google.android.gms.gcm.GcmListenerService;
 
 import tomerbu.edu.gcmdemo.MainActivity;
-import tomerbu.edu.gcmdemo.R;
 
 public class MyGcmListenerService extends GcmListenerService {
 
@@ -44,51 +43,51 @@ public class MyGcmListenerService extends GcmListenerService {
      *             For Set of keys use data.keySet().
      */
     // [START receive_message]
-
-
-
     @Override
     public void onMessageReceived(String from, Bundle data) {
         Bundle notification = data.getBundle("notification");
         if (notification != null) {
-            for (String key : notification.keySet()) {
-                String value = notification.getString(key);
-                Log.d(TAG, String.format("Key: %s, Value: %s", key, value));
-            }
-
             String message = notification.getString("message");
             if (from.startsWith("/topics/")) {
                 // message received from some topic.
                 Log.d(TAG, "message received from some topic: " + from);
             } else {
-                // regular message (not topic related, ID Related.
+                // regular message (not topic related, token Related.
                 Log.d(TAG, "regular message senderID: " + from); //from == Sender ID (Our application Sender ID, received from the google api console)
             }
 
-            // [START_EXCLUDE]
-            /**
-             * Production applications would usually process the message here.
-             * Eg: - Syncing with server.
-             *     - Store message in local database.
-             *     - Update UI.
-             */
+            sendNotification(notification);
 
-            /**
-             * In some cases it may be useful to show a notification indicating to the user
-             * that a message was received.
-             */
-            sendNotification(message);
-            // [END_EXCLUDE]
+        } else /* It's a Data notification */ {
+            String body = data.getString("body");
+            String title = data.getString("title");
+            String icon = data.getString("icon");
+            if (body != null && title != null && icon != null) {
+                sendNotification(data);
+            }
         }
     }
+
+    private String getStringResourceByName(String aString) {
+        String packageName = getPackageName();
+        int resId = getResources().getIdentifier(aString, "string", packageName);
+        return getString(resId);
+    }
+
+    private int getDrawableResourceIdByName(String name) {
+        String packageName = getPackageName();
+        return getResources().getIdentifier(name, "drawable", packageName);
+    }
+
+
     // [END receive_message]
 
     /**
      * Create and show a simple notification containing the received GCM message.
      *
-     * @param message GCM message received.
+     * @param notification Bundle.
      */
-    private void sendNotification(String message) {
+    private void sendNotification(Bundle notification) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -96,9 +95,9 @@ public class MyGcmListenerService extends GcmListenerService {
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("GCM Message")
-                .setContentText(message)
+                .setContentTitle(notification.getString("title"))
+                .setContentText(notification.getString("body"))
+                .setSmallIcon(getDrawableResourceIdByName(notification.getString("icon")))
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent);
